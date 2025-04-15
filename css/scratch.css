@@ -5,7 +5,7 @@
   }
 
 .header {
-    background-image: url('assets/img/filmreel.jpg'); 
+    background-image: url('../assets/img/Filmreel.jpeg'); 
     background-size: cover;
     background-position: center;
     height: 300px; 
