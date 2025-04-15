@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Matching Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: lightgray;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 0px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    #timer {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-gap: 15px;
+      justify-content: center;
+    }
+
+    .card {
+      background-color: #fff;
+      border: 2px solid #555;
+      border-radius: 8px;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.5em;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s;
+    }
+
+    .card.flipped {
+      background-color: #e0e0e0;
+    }
+
+    .card.matched {
+      background-color: #c8facc;
+      color: green;
+      cursor: default;
+    }
+
+    #play-again {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      display: none;
+    }
+
+    #play-again:hover {
+      background-color: #0056b3;
+    }
+
+    .navbar {
+  background-color: black;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 40px; /* space inside */
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  width: 100vw; /* forces full width of viewport */
+  left: 0;
+  top: 0;
+  box-sizing: border-box;
+}
+
+.navbar-left h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.navbar-right a {
+  color: white;
+  text-decoration: none;
+  margin-left: 25px;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.navbar-right a:hover {
+    transform: scale(1.2);
+    text-decoration: none;
+}
+
+#game-info {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px auto;
+  max-width: 600px;
+  font-family: sans-serif;
+  font-size: 18px;
+  padding: 0 20px;
+  gap: 15px;
+  font-family: 'Times New Roman', Times, serif;
+}
+
+ 
+  </style>
+</head>
+<body>
+    <header class="navbar">
+        <div class="navbar-left">
+          <h2></h2>
+        </div>
+        <nav class="navbar-right">
+          <a href="index.html">Resume</a>
+          <a href="scratch.html">Movies Page</a>
+        </nav>
+      </header>
+  <h1>Animal Match Game</h1>
+  <div id="game-info">
+    <span id="timer">Time: 0s</span>
+  </div>
+  <div id="game-board"></div>
+  <button id="play-again">Play Again</button>
+
+  <script>
+    const animalPairs = [
+      ['Dog', '🐶'],
+      ['Cat', '🐱'],
+      ['Panda', '🐼'],
+      ['Lion', '🦁'],
+      ['Monkey', '🐵'],
+      ['Elephant', '🐘']
+    ];
+
+    let cards = [];
+    let flippedCards = [];
+    let matchedCount = 0;
+    let timer;
+    let seconds = 0;
+
+    const board = document.getElementById('game-board');
+    const timerDisplay = document.getElementById('timer');
+    const playAgainBtn = document.getElementById('play-again');
+
+    function startTimer() {
+      seconds = 0;
+      timerDisplay.textContent = `Time: 0s`;
+      timer = setInterval(() => {
+        seconds++;
+        timerDisplay.textContent = `Time: ${seconds}s`;
+      }, 1000);
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+    }
+
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    function createCards() {
+      const cardData = [];
+      animalPairs.forEach(([name, emoji]) => {
+        cardData.push({ value: name, pairId: name });
+        cardData.push({ value: emoji, pairId: name });
+      });
+
+      shuffle(cardData);
+      board.innerHTML = '';
+      cards = [];
+
+      cardData.forEach(data => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.dataset.value = data.value;
+        card.dataset.pairId = data.pairId;
+        card.textContent = '';
+        card.addEventListener('click', () => flipCard(card));
+        board.appendChild(card);
+        cards.push(card);
+      });
+    }
+
+    function flipCard(card) {
+      if (
+        flippedCards.length === 2 ||
+        card.classList.contains('flipped') ||
+        card.classList.contains('matched')
+      ) return;
+
+      card.classList.add('flipped');
+      card.textContent = card.dataset.value;
+      flippedCards.push(card);
+
+      if (flippedCards.length === 2) {
+        const [first, second] = flippedCards;
+        if (first.dataset.pairId === second.dataset.pairId && first !== second) {
+          first.classList.add('matched');
+          second.classList.add('matched');
+          flippedCards = [];
+          matchedCount += 2;
+
+          if (matchedCount === cards.length) {
+            stopTimer();
+            playAgainBtn.style.display = 'inline-block';
+          }
+        } else {
+          setTimeout(() => {
+            first.classList.remove('flipped');
+            second.classList.remove('flipped');
+            first.textContent = '';
+            second.textContent = '';
+            flippedCards = [];
+          }, 1000);
+        }
+      }
+    }
+
+    function startGame() {
+      matchedCount = 0;
+      flippedCards = [];
+      playAgainBtn.style.display = 'none';
+      createCards();
+      startTimer();
+    }
+
+    playAgainBtn.addEventListener('click', startGame);
+
+    startGame();
+  </script>
+
+</body>
+</html>
